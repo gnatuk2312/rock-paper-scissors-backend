@@ -5,6 +5,7 @@ import { appConfig, databaseConfig, jwtConfig } from './config';
 import { DatabaseProvider } from './providers';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
+import { RoomModule } from './modules/room/room.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserModule } from './modules/user/user.module';
     }),
     DatabaseProvider,
     AuthModule,
+    RoomModule,
     UserModule,
   ],
 })
