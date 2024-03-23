@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 import { RoomServiceInterface } from './interface/room-service.interface';
 import { CreateRoomDTO } from './dto/create-room.dto';
@@ -17,13 +18,14 @@ import { USER_SERVICE } from '../user/user.constants';
 import { UserServiceInterface } from '../user/interface/user-service.interface';
 import { Room } from './entities/room.entity';
 import { RoomPlayerInterface } from './interface/room-player.interface';
-import { RoomPlayerMoveEnum } from './room.enums';
+import { RoomEmitterEvent, RoomPlayerMoveEnum } from './room.enums';
 
 @Injectable()
 export class RoomService implements RoomServiceInterface {
   constructor(
     @Inject(ROOM_REPOSITORY) private readonly roomRepository: RoomRepository,
     @Inject(USER_SERVICE) private readonly userService: UserServiceInterface,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   public async create(dto: CreateRoomDTO): Promise<RoomInterface> {
@@ -42,9 +44,17 @@ export class RoomService implements RoomServiceInterface {
       return roomPlayer;
     });
 
-    return await this.roomRepository.create(room);
+    const response = await this.roomRepository.create(room);
+
+    this.eventEmitter.emit(RoomEmitterEvent.JOIN_ROOM_INVITE, {
+      roomId: response.id,
+      userIds: response.players.map((player) => player.user.id),
+    });
+
+    return response;
   }
 
+  @OnEvent(RoomEmitterEvent.LEAVE_ROOM)
   public async delete(id: string): Promise<DeleteResult> {
     return await this.roomRepository.delete(id);
   }
@@ -76,26 +86,6 @@ export class RoomService implements RoomServiceInterface {
 
   private isAllUsersMadeMove(players: RoomPlayerInterface[]): boolean {
     return players.every((player) => player.move !== null);
-  }
-
-  public async makeMove(dto: MakeMoveDTO): Promise<RoomInterface> {
-    const { roomId, userId, move } = dto;
-
-    const room = await this.findById(roomId);
-    const roomPlayerIndex = this.findRoomPlayerIndexByUserId(userId, room);
-
-    if (roomPlayerIndex === -1) throw new ForbiddenException();
-
-    room.players[roomPlayerIndex].move = move;
-
-    const updatedRoom = await this.roomRepository.update(room);
-
-    if (this.isAllUsersMadeMove(updatedRoom.players)) {
-      await this.determineWinner(room.id);
-      return await this.resetRoomPlayersMove(room.id);
-    }
-
-    return updatedRoom;
   }
 
   private async incrementScoreForWinner(
@@ -134,7 +124,13 @@ export class RoomService implements RoomServiceInterface {
       movesCount[RoomPlayerMoveEnum.PAPER] === numberOfPlayers ||
       movesCount[RoomPlayerMoveEnum.SCISSORS] === numberOfPlayers
     ) {
-      console.log("It's a tie!");
+      const room = await this.findById(roomId);
+
+      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+        room,
+        message: "It's a tie!",
+      });
+
       return;
     }
 
@@ -144,7 +140,13 @@ export class RoomService implements RoomServiceInterface {
       movesCount[RoomPlayerMoveEnum.PAPER] > 0 &&
       movesCount[RoomPlayerMoveEnum.SCISSORS] > 0
     ) {
-      console.log("It's a tie!");
+      const room = await this.findById(roomId);
+
+      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+        room,
+        message: "It's a tie!",
+      });
+
       return;
     }
 
@@ -153,9 +155,16 @@ export class RoomService implements RoomServiceInterface {
       movesCount[RoomPlayerMoveEnum.ROCK] > 0 &&
       movesCount[RoomPlayerMoveEnum.PAPER] > 0
     ) {
-      await this.incrementScoreForWinner(id, RoomPlayerMoveEnum.PAPER);
+      const room = await this.incrementScoreForWinner(
+        id,
+        RoomPlayerMoveEnum.PAPER,
+      );
 
-      console.log('Paper wins!');
+      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+        room,
+        message: 'Paper wins!',
+      });
+
       return;
     }
 
@@ -164,9 +173,16 @@ export class RoomService implements RoomServiceInterface {
       movesCount[RoomPlayerMoveEnum.PAPER] > 0 &&
       movesCount[RoomPlayerMoveEnum.SCISSORS] > 0
     ) {
-      await this.incrementScoreForWinner(id, RoomPlayerMoveEnum.SCISSORS);
+      const room = await this.incrementScoreForWinner(
+        id,
+        RoomPlayerMoveEnum.SCISSORS,
+      );
 
-      console.log('Scissors wins!');
+      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+        room,
+        message: 'Scissors wins!',
+      });
+
       return;
     }
 
@@ -175,14 +191,25 @@ export class RoomService implements RoomServiceInterface {
       movesCount[RoomPlayerMoveEnum.ROCK] > 0 &&
       movesCount[RoomPlayerMoveEnum.SCISSORS] > 0
     ) {
-      await this.incrementScoreForWinner(id, RoomPlayerMoveEnum.ROCK);
+      const room = await this.incrementScoreForWinner(
+        id,
+        RoomPlayerMoveEnum.ROCK,
+      );
 
-      console.log('Rock wins!');
+      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+        room,
+        message: 'Rock wins!',
+      });
+
       return;
     }
 
     // Base case (result: TIE)
-    console.log("It's a tie!");
+    this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+      room,
+      message: "It's a tie!",
+    });
+
     return;
   }
 
@@ -195,5 +222,25 @@ export class RoomService implements RoomServiceInterface {
     });
 
     return await this.roomRepository.update(room);
+  }
+
+  public async makeMove(dto: MakeMoveDTO): Promise<RoomInterface> {
+    const { roomId, userId, move } = dto;
+
+    const room = await this.findById(roomId);
+    const roomPlayerIndex = this.findRoomPlayerIndexByUserId(userId, room);
+
+    if (roomPlayerIndex === -1) throw new ForbiddenException();
+
+    room.players[roomPlayerIndex].move = move;
+
+    const updatedRoom = await this.roomRepository.update(room);
+
+    if (this.isAllUsersMadeMove(updatedRoom.players)) {
+      await this.determineWinner(room.id);
+      return await this.resetRoomPlayersMove(room.id);
+    }
+
+    return updatedRoom;
   }
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { appConfig, databaseConfig, jwtConfig } from './config';
 import { DatabaseProvider } from './providers';
@@ -13,6 +14,7 @@ import { RoomModule } from './modules/room/room.module';
       isGlobal: true,
       load: [appConfig, databaseConfig, jwtConfig],
     }),
+    EventEmitterModule.forRoot(),
     DatabaseProvider,
     AuthModule,
     RoomModule,
