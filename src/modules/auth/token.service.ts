@@ -2,11 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
+import { TokenServiceInterface } from './interface/token-service.interface';
 import { UserInterface } from '../user/interface/user.interface';
 import { JWTPayloadInterface } from './interface/jwt-payload.interface';
 
 @Injectable()
-export class TokenService {
+export class TokenService implements TokenServiceInterface {
   private readonly accessTokenSecret: string;
   private readonly refreshTokenSecret: string;
 
@@ -45,6 +46,14 @@ export class TokenService {
     const refreshToken = this.signRefreshToken(payload);
 
     return { accessToken, refreshToken };
+  }
+
+  public verifyAccessToken(token: string): JWTPayloadInterface {
+    try {
+      return this.jwtService.verify(token, { secret: this.accessTokenSecret });
+    } catch (error) {
+      throw new UnauthorizedException('Access token is not valid');
+    }
   }
 
   public verifyRefreshToken(token: string): JWTPayloadInterface {

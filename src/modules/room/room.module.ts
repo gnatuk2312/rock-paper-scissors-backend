@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
 import { RoomPlayer } from './entities/room-player.entity';
 import { AuthModule } from '../auth/auth.module';
+import { RoomWebsocketModule } from './websocket/websocket.module';
 import { UserModule } from '../user/user.module';
 import { ROOM_MAPPER, ROOM_REPOSITORY, ROOM_SERVICE } from './room.constants';
 import { RoomRepository } from './room.repository';
@@ -16,6 +17,7 @@ import { RoomMapper } from './room.mapper';
     TypeOrmModule.forFeature([Room, RoomPlayer]),
     UserModule,
     AuthModule,
+    RoomWebsocketModule,
   ],
   providers: [
     {

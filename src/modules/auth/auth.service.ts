@@ -4,18 +4,18 @@ import { compare } from 'bcrypt';
 import { AuthServiceInterface } from './interface/auth-service.interface';
 import { USER_SERVICE } from '../user/user.constants';
 import { UserServiceInterface } from '../user/interface/user-service.interface';
+import { TokenServiceInterface } from './interface/token-service.interface';
 import { AuthInterface } from './interface/auth.interface';
 import { SignUpDTO } from './dto/sign-up.dto';
 import { SignInDTO } from './dto/sign-in.dto';
 import { RefreshTokenDTO } from './dto/refresh-token.dto';
 import { TOKEN_SERVICE } from './auth.constants';
-import { TokenService } from './token.service';
 
 @Injectable()
 export class AuthService implements AuthServiceInterface {
   constructor(
     @Inject(USER_SERVICE) private readonly userService: UserServiceInterface,
-    @Inject(TOKEN_SERVICE) private readonly tokenService: TokenService,
+    @Inject(TOKEN_SERVICE) private readonly tokenService: TokenServiceInterface,
   ) {}
 
   public async signUp(dto: SignUpDTO): Promise<AuthInterface> {
