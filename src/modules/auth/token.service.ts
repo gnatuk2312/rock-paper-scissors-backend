@@ -33,7 +33,7 @@ export class TokenService implements TokenServiceInterface {
   private signRefreshToken(payload: JWTPayloadInterface): string {
     return this.jwtService.sign(payload, {
       secret: this.refreshTokenSecret,
-      expiresIn: '3h',
+      expiresIn: '7d',
     });
   }
 

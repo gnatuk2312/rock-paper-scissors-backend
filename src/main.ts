@@ -11,12 +11,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const tokenService = app.get<TokenServiceInterface>(TOKEN_SERVICE);
+  const configService = app.get(ConfigService);
 
   app.useWebSocketAdapter(new RoomWebsocketAdapter(app, tokenService));
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe());
-
-  const configService = app.get(ConfigService);
 
   await app.listen(configService.get('app.port'));
 }

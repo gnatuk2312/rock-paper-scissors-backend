@@ -6,9 +6,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { RoomPlayerInterface } from '../interface/room-player.interface';
 import { RoomInterface } from '../interface/room.interface';
 import { RoomPlayer } from './room-player.entity';
+import { RoomPlayerInterface } from '../interface/room-player.interface';
 
 @Entity('rooms')
 export class Room implements RoomInterface {

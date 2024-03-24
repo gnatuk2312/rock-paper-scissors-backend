@@ -17,8 +17,8 @@ import { RoomModule } from './modules/room/room.module';
     EventEmitterModule.forRoot(),
     DatabaseProvider,
     AuthModule,
-    RoomModule,
     UserModule,
+    RoomModule,
   ],
 })
 export class AppModule {}

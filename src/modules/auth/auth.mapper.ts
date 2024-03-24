@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { AuthMapperInterface } from './interface/auth-mapper.interface';
-import { AuthInterface } from './interface/auth.interface';
-import { AuthDTO } from './dto/auth.dto';
 import { USER_MAPPER } from '../user/user.constants';
 import { UserMapperInterface } from '../user/interface/user-mapper.interface';
+import { AuthInterface } from './interface/auth.interface';
+import { AuthDTO } from './dto/auth.dto';
 
 @Injectable()
 export class AuthMapper implements AuthMapperInterface {

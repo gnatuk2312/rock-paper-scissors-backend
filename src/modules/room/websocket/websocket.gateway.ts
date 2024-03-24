@@ -11,12 +11,15 @@ import {
 import { Server } from 'socket.io';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
-import { SocketSubscribeEvent, SocketEmitEvent } from './websocket.enums';
-import { SocketInterface } from './interface/socket.interface';
+import {
+  SocketSubscribeEventEnum,
+  SocketEmitEventEnum,
+} from './websocket.enums';
+import { RoomEventEnum } from '../room.enums';
 import { ROOM_WEBSOCKET_SESSIONS } from './websocket.constants';
 import { RoomWebsocketSessions } from './websocket.sessions';
+import { SocketInterface } from './interface/socket.interface';
 import { RoomInterface } from '../interface/room.interface';
-import { RoomEmitterEvent } from '../room.enums';
 
 @Injectable()
 @WebSocketGateway()
@@ -35,7 +38,10 @@ export class RoomWebsocketGateway
   private handleBroadcastOnlineUsers() {
     const sessions = this.websocketSessions.getAll();
 
-    this.server.emit(SocketEmitEvent.ONLINE_USERS, Array.from(sessions.keys()));
+    this.server.emit(
+      SocketEmitEventEnum.ONLINE_USERS,
+      Array.from(sessions.keys()),
+    );
   }
 
   handleConnection(socket: SocketInterface) {
@@ -52,17 +58,17 @@ export class RoomWebsocketGateway
     this.handleBroadcastOnlineUsers();
   }
 
-  @OnEvent(RoomEmitterEvent.JOIN_ROOM_INVITE)
+  @OnEvent(RoomEventEnum.JOIN_ROOM_INVITE)
   handleJoinRoomInvite(data: { roomId: string; userIds: string[] }) {
     const { roomId, userIds } = data;
 
     userIds.forEach((userId) => {
       const session = this.websocketSessions.get(userId);
-      session?.emit(SocketEmitEvent.JOIN_ROOM_INVITE, { roomId });
+      session?.emit(SocketEmitEventEnum.JOIN_ROOM_INVITE, { roomId });
     });
   }
 
-  @SubscribeMessage(SocketSubscribeEvent.JOIN_ROOM)
+  @SubscribeMessage(SocketSubscribeEventEnum.JOIN_ROOM)
   handleJoinRoom(
     @MessageBody() data: { roomId: string },
     @ConnectedSocket() socket: SocketInterface,
@@ -70,22 +76,20 @@ export class RoomWebsocketGateway
     socket.join(`room-${data.roomId}`);
   }
 
-  @OnEvent(RoomEmitterEvent.WINNER_DETERMINED)
+  @OnEvent(RoomEventEnum.WINNER_DETERMINED)
   handleWinnerDetermined(data: { room: RoomInterface; message: string }) {
     this.server
       .to(`room-${data.room.id}`)
-      .emit(SocketEmitEvent.WINNER_DETERMINED, data);
+      .emit(SocketEmitEventEnum.WINNER_DETERMINED, data);
   }
 
-  @SubscribeMessage(SocketSubscribeEvent.LEAVE_ROOM)
+  @SubscribeMessage(SocketSubscribeEventEnum.LEAVE_ROOM)
   handleLeaveRoom(
     @MessageBody() data: { roomId: string },
     @ConnectedSocket() socket: SocketInterface,
   ) {
-    const { roomId } = data;
+    socket.leave(`room-${data.roomId}`);
 
-    socket.leave(`room-${roomId}`);
-
-    this.eventEmitter.emit(RoomEmitterEvent.LEAVE_ROOM, roomId);
+    this.eventEmitter.emit(RoomEventEnum.LEAVE_ROOM, data.roomId);
   }
 }

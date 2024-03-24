@@ -1,6 +1,6 @@
 import { Controller, Get, Inject, Param, UseGuards } from '@nestjs/common';
 
-import { USER_MAPPER, USER_SERVICE } from './user.constants';
+import { USER_SERVICE, USER_MAPPER } from './user.constants';
 import { UserServiceInterface } from './interface/user-service.interface';
 import { UserMapperInterface } from './interface/user-mapper.interface';
 import { UserDTO } from './dto/user.dto';

@@ -2,10 +2,10 @@ import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
 import { UserModule } from '../user/user.module';
-import { AUTH_MAPPER, AUTH_SERVICE, TOKEN_SERVICE } from './auth.constants';
+import { AUTH_SERVICE, AUTH_MAPPER, TOKEN_SERVICE } from './auth.constants';
 import { AuthService } from './auth.service';
-import { TokenService } from './token.service';
 import { AuthMapper } from './auth.mapper';
+import { TokenService } from './token.service';
 import { AuthController } from './auth.controller';
 
 @Module({

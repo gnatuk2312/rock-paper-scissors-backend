@@ -13,7 +13,7 @@ import { DeleteResult } from 'typeorm';
 
 import { AuthGuard } from '../auth/auth.guard';
 import { GetUserId } from 'src/decorators/get-user-id.decorator';
-import { ROOM_MAPPER, ROOM_SERVICE } from './room.constants';
+import { ROOM_SERVICE, ROOM_MAPPER } from './room.constants';
 import { RoomServiceInterface } from './interface/room-service.interface';
 import { RoomMapperInterface } from './interface/room-mapper.interface';
 import { RoomDTO } from './dto/room.dto';

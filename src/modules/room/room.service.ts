@@ -18,7 +18,7 @@ import { USER_SERVICE } from '../user/user.constants';
 import { UserServiceInterface } from '../user/interface/user-service.interface';
 import { Room } from './entities/room.entity';
 import { RoomPlayerInterface } from './interface/room-player.interface';
-import { RoomEmitterEvent, RoomPlayerMoveEnum } from './room.enums';
+import { RoomEventEnum, RoomPlayerMoveEnum } from './room.enums';
 
 @Injectable()
 export class RoomService implements RoomServiceInterface {
@@ -46,7 +46,7 @@ export class RoomService implements RoomServiceInterface {
 
     const response = await this.roomRepository.create(room);
 
-    this.eventEmitter.emit(RoomEmitterEvent.JOIN_ROOM_INVITE, {
+    this.eventEmitter.emit(RoomEventEnum.JOIN_ROOM_INVITE, {
       roomId: response.id,
       userIds: response.players.map((player) => player.user.id),
     });
@@ -54,7 +54,7 @@ export class RoomService implements RoomServiceInterface {
     return response;
   }
 
-  @OnEvent(RoomEmitterEvent.LEAVE_ROOM)
+  @OnEvent(RoomEventEnum.LEAVE_ROOM)
   public async delete(id: string): Promise<DeleteResult> {
     return await this.roomRepository.delete(id);
   }
@@ -126,7 +126,7 @@ export class RoomService implements RoomServiceInterface {
     ) {
       const room = await this.findById(roomId);
 
-      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+      this.eventEmitter.emit(RoomEventEnum.WINNER_DETERMINED, {
         room,
         message: "It's a tie!",
       });
@@ -142,7 +142,7 @@ export class RoomService implements RoomServiceInterface {
     ) {
       const room = await this.findById(roomId);
 
-      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+      this.eventEmitter.emit(RoomEventEnum.WINNER_DETERMINED, {
         room,
         message: "It's a tie!",
       });
@@ -160,7 +160,7 @@ export class RoomService implements RoomServiceInterface {
         RoomPlayerMoveEnum.PAPER,
       );
 
-      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+      this.eventEmitter.emit(RoomEventEnum.WINNER_DETERMINED, {
         room,
         message: 'Paper wins!',
       });
@@ -178,7 +178,7 @@ export class RoomService implements RoomServiceInterface {
         RoomPlayerMoveEnum.SCISSORS,
       );
 
-      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+      this.eventEmitter.emit(RoomEventEnum.WINNER_DETERMINED, {
         room,
         message: 'Scissors wins!',
       });
@@ -196,7 +196,7 @@ export class RoomService implements RoomServiceInterface {
         RoomPlayerMoveEnum.ROCK,
       );
 
-      this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+      this.eventEmitter.emit(RoomEventEnum.WINNER_DETERMINED, {
         room,
         message: 'Rock wins!',
       });
@@ -205,7 +205,7 @@ export class RoomService implements RoomServiceInterface {
     }
 
     // Base case (result: TIE)
-    this.eventEmitter.emit(RoomEmitterEvent.WINNER_DETERMINED, {
+    this.eventEmitter.emit(RoomEventEnum.WINNER_DETERMINED, {
       room,
       message: "It's a tie!",
     });

@@ -7,11 +7,11 @@ import {
 import { hash } from 'bcrypt';
 
 import { UserServiceInterface } from './interface/user-service.interface';
-import { CreateUserDTO } from './dto/create-user.dto';
-import { UserInterface } from './interface/user.interface';
-import { User } from './entities/user.entity';
 import { USER_REPOSITORY } from './user.constants';
 import { UserRepositoryInterface } from './interface/user-repository.interface';
+import { User } from './entities/user.entity';
+import { UserInterface } from './interface/user.interface';
+import { CreateUserDTO } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService implements UserServiceInterface {

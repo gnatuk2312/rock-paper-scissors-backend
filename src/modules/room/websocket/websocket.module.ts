@@ -18,6 +18,5 @@ import { RoomWebsocketSessions } from './websocket.sessions';
       useClass: RoomWebsocketSessions,
     },
   ],
-  exports: [ROOM_WEBSOCKET_GATEWAY],
 })
 export class RoomWebsocketModule {}

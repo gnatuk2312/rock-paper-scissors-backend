@@ -9,7 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         return {
-          ...configService.get('db'),
+          ...configService.get('database'),
           autoLoadEntities: true,
           synchronize: true,
         };

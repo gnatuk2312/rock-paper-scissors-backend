@@ -1,1 +1,1 @@
-export { default as DatabaseProvider } from './database.providers';
+export { default as DatabaseProvider } from './database.provider';
